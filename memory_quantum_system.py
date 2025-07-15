@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Memory Quantum System - 学習型記憶データベース
+Memory Quantum System - Learning-based Memory Database
 
-AIと人間の協働における記憶システムの革新
-- 使うほど賢くなる動的記憶構造
-- 成功・失敗パターンの学習・活用
-- 文脈保持による高精度検索
-- 自己改善フィードバックループ
+Revolutionary memory system for AI-human collaboration
+- Dynamic memory structure that gets smarter with use
+- Learning and leveraging success/failure patterns
+- High-precision search with context preservation
+- Self-improving feedback loop
 """
 
 import sys
@@ -23,39 +23,39 @@ from enum import Enum
 
 
 class MQType(Enum):
-    """Memory Quantum記憶タイプ"""
-    SUCCESS = "成功体験"
-    FAILURE = "失敗体験" 
-    NEW_DISCOVERY = "新発見"
-    INSIGHT = "洞察"
-    LEARNING = "学習記録"
-    STRATEGY = "戦略"
-    PATTERN = "パターン"
-    SOLUTION = "解決策"
+    """Memory Quantum Type"""
+    SUCCESS = "success_experience"
+    FAILURE = "failure_experience" 
+    NEW_DISCOVERY = "new_discovery"
+    INSIGHT = "insight"
+    LEARNING = "learning_record"
+    STRATEGY = "strategy"
+    PATTERN = "pattern"
+    SOLUTION = "solution"
 
 
 class MQStatus(Enum):
-    """Memory Quantum状態"""
-    ACTIVE = "活性"
-    RESOURCED = "資源化済"
-    ARCHIVED = "アーカイブ済"
-    PENDING = "保留中"
+    """Memory Quantum Status"""
+    ACTIVE = "active"
+    RESOURCED = "resourced"
+    ARCHIVED = "archived"
+    PENDING = "pending"
 
 
 class EmotionState(Enum):
-    """感情状態"""
-    JOY = "喜び"
-    CURIOSITY = "好奇心"
-    CONCERN = "懸念"
-    DETERMINATION = "決意"
-    NEUTRAL = "中立"
-    SATISFACTION = "満足"
-    FRUSTRATION = "困惑"
+    """Emotion State"""
+    JOY = "joy"
+    CURIOSITY = "curiosity"
+    CONCERN = "concern"
+    DETERMINATION = "determination"
+    NEUTRAL = "neutral"
+    SATISFACTION = "satisfaction"
+    FRUSTRATION = "frustration"
 
 
 @dataclass
 class MemoryQuantum:
-    """Memory Quantum - 記憶の基本単位"""
+    """Memory Quantum - Basic unit of memory"""
     id: str
     type: MQType
     status: MQStatus
@@ -73,14 +73,14 @@ class MemoryQuantum:
 
 
 class MemoryQuantumDB:
-    """Memory Quantum Database - 学習型記憶データベース"""
+    """Memory Quantum Database - Learning-based memory database"""
     
     def __init__(self, db_path: str = "memory_quantum.db"):
         self.db_path = Path(db_path)
         self._init_database()
         
     def _init_database(self):
-        """データベース初期化"""
+        """Initialize database"""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute('''
                 CREATE TABLE IF NOT EXISTS memory_quantums (
@@ -101,7 +101,7 @@ class MemoryQuantumDB:
                 )
             ''')
             
-            # インデックス作成
+            # Create indexes
             indices = [
                 "CREATE INDEX IF NOT EXISTS idx_mq_type ON memory_quantums(type)",
                 "CREATE INDEX IF NOT EXISTS idx_mq_status ON memory_quantums(status)",
@@ -114,7 +114,7 @@ class MemoryQuantumDB:
                 conn.execute(idx)
     
     def generate_mq_id(self, title: str) -> str:
-        """Memory Quantum ID生成"""
+        """Generate Memory Quantum ID"""
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         title_hash = hashlib.sha256(title.encode()).hexdigest()[:6]
         return f"MQ-{timestamp}-{title_hash}"
@@ -126,7 +126,7 @@ class MemoryQuantumDB:
                       emotion: EmotionState = EmotionState.CURIOSITY,
                       tags: List[str] = None,
                       importance: float = 5.0) -> str:
-        """新しいMemory Quantum作成"""
+        """Create new Memory Quantum"""
         
         if tags is None:
             tags = []
@@ -154,7 +154,7 @@ class MemoryQuantumDB:
         return mq_id
     
     def _save_to_db(self, mq: MemoryQuantum):
-        """データベースに保存"""
+        """Save to database"""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute('''
                 INSERT OR REPLACE INTO memory_quantums 
@@ -169,7 +169,7 @@ class MemoryQuantumDB:
             ))
     
     def search(self, query: str, limit: int = 10) -> List[MemoryQuantum]:
-        """検索機能"""
+        """Search function"""
         results = []
         
         with sqlite3.connect(self.db_path) as conn:
@@ -186,7 +186,7 @@ class MemoryQuantumDB:
         return results
     
     def get(self, mq_id: str) -> Optional[MemoryQuantum]:
-        """ID指定でMQ取得"""
+        """Get MQ by ID"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 'SELECT * FROM memory_quantums WHERE id = ?', 
@@ -196,27 +196,27 @@ class MemoryQuantumDB:
             return self._row_to_mq(row) if row else None
     
     def register_feedback(self, mq_id: str, success: bool, feedback: str = ""):
-        """利用フィードバック登録"""
+        """Register usage feedback"""
         mq = self.get(mq_id)
         if not mq:
             return
         
-        # 使用回数増加
+        # Increase usage count
         mq.usage_count += 1
         
-        # 成功率更新
+        # Update success rate
         if success:
             mq.success_rate = (mq.success_rate * (mq.usage_count - 1) + 1.0) / mq.usage_count
         else:
             mq.success_rate = (mq.success_rate * (mq.usage_count - 1) + 0.0) / mq.usage_count
         
-        # 重要度調整
+        # Adjust importance
         if success:
             mq.importance = min(10.0, mq.importance + 0.1)
         else:
             mq.importance = max(0.0, mq.importance - 0.1)
         
-        # フィードバック記録
+        # Record feedback
         if feedback:
             mq.lessons_learned.append(feedback)
         
@@ -224,7 +224,7 @@ class MemoryQuantumDB:
         self._save_to_db(mq)
     
     def _row_to_mq(self, row) -> MemoryQuantum:
-        """データベース行をMQオブジェクトに変換"""
+        """Convert database row to MQ object"""
         return MemoryQuantum(
             id=row[0],
             type=MQType(row[1]),
@@ -243,7 +243,7 @@ class MemoryQuantumDB:
         )
     
     def get_statistics(self) -> Dict[str, Any]:
-        """統計情報取得"""
+        """Get statistics"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute('''
                 SELECT 
@@ -268,7 +268,7 @@ class MemoryQuantumDB:
             }
     
     def get_high_performing_quantums(self, limit: int = 10) -> List[MemoryQuantum]:
-        """高性能Quantum取得"""
+        """Get high-performing quantums"""
         results = []
         
         with sqlite3.connect(self.db_path) as conn:
@@ -285,32 +285,32 @@ class MemoryQuantumDB:
         return results
 
 
-# 使用例
+# Usage example
 if __name__ == "__main__":
-    # データベース初期化
+    # Initialize database
     db = MemoryQuantumDB("memory_quantum.db")
     
-    # 新しい記憶を作成
+    # Create new memory
     mq_id = db.create_quantum(
-        title="API認証エラー解決",
-        content="トークンの有効期限切れが原因。リフレッシュトークンで再認証を実行。",
+        title="API authentication error resolution",
+        content="Token expiration was the cause. Re-authenticate with refresh token.",
         mq_type=MQType.SOLUTION,
-        tags=["API", "認証", "トラブルシューティング"],
+        tags=["API", "authentication", "troubleshooting"],
         importance=8.0
     )
     
-    print(f"作成されたMQ ID: {mq_id}")
+    print(f"Created MQ ID: {mq_id}")
     
-    # 検索
+    # Search
     results = db.search("API")
-    print(f"\n検索結果: {len(results)}件")
+    print(f"\nSearch results: {len(results)} items")
     
     for mq in results:
-        print(f"- {mq.title} (重要度: {mq.importance})")
+        print(f"- {mq.title} (importance: {mq.importance})")
     
-    # 統計情報表示
+    # Display statistics
     stats = db.get_statistics()
-    print(f"\n統計情報:")
-    print(f"総記憶数: {stats['total_quantums']}")
-    print(f"平均重要度: {stats['avg_importance']:.2f}")
-    print(f"平均成功率: {stats['avg_success_rate']:.2f}")
+    print(f"\nStatistics:")
+    print(f"Total quantums: {stats['total_quantums']}")
+    print(f"Average importance: {stats['avg_importance']:.2f}")
+    print(f"Average success rate: {stats['avg_success_rate']:.2f}")

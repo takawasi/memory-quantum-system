@@ -132,7 +132,17 @@ dmypy.json
 *.db
 *.sqlite
 *.sqlite3
+*.backup
 backups/
 logs/
 temp/
 .DS_Store
+
+# Virtual environments
+mastodon_env/
+*_env/
+*venv/
+
+# Mastodon credentials
+mastodon_client.secret
+*.secret
